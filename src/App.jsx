@@ -418,8 +418,8 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
           <div style={{fontSize:11,color:T.n400,marginTop:1}}>{cfg.description}</div>
         </div>
       </div>
-      <div style={{height:400,overflowY:"auto",padding:16,display:"flex",flexDirection:"column",gap:12,background:T.n50}}>
-        {initializing&&<Spinner label={cfg.name+" analisando…"} color={meta.color}/>}
+      <div style={{minHeight:400,maxHeight:"60vh",overflowY:"auto",padding:16,display:"flex",flexDirection:"column",gap:12,background:T.n50}}>
+        {initializing&&<div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",minHeight:300}}><Spinner label={cfg.name+" analisando…"} color={meta.color}/></div>}
         {messages.map((msg,i)=>(
           <div key={i} style={{display:"flex",flexDirection:"column",alignItems:msg.role==="user"?"flex-end":"flex-start"}}>
             <div style={{fontSize:10,color:T.n400,marginBottom:3,fontWeight:600}}>{msg.role==="user"?"Você":cfg.name}</div>
