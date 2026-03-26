@@ -411,21 +411,11 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
 
   return (
     <div style={{background:T.n0,border:"1px solid "+T.n100,borderRadius:T.r12,boxShadow:T.shadowMd,overflow:"hidden"}}>
-      <div style={{background:T.n50,borderBottom:"1px solid "+T.n100,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:32,height:32,borderRadius:T.r8,background:meta.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>{meta.icon}</div>
-          <div>
-            <div style={{fontWeight:700,fontSize:13,color:T.n800}}>{cfg.name}</div>
-            <div style={{fontSize:11,color:T.n400,marginTop:1}}>{cfg.description}</div>
-          </div>
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <select value={modelKey} onChange={e=>onModelChange(e.target.value)} disabled={initializing||loading}
-            style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
-            {CLAUDE_MODELS.map(m=><option key={m.key} value={m.key}>{m.label}</option>)}
-          </select>
-          <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
-          <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar →</Btn>
+      <div style={{background:T.n50,borderBottom:"1px solid "+T.n100,padding:"12px 16px",display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:10}}>
+        <div style={{width:32,height:32,borderRadius:T.r8,background:meta.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>{meta.icon}</div>
+        <div>
+          <div style={{fontWeight:700,fontSize:13,color:T.n800}}>{cfg.name}</div>
+          <div style={{fontSize:11,color:T.n400,marginTop:1}}>{cfg.description}</div>
         </div>
       </div>
       <div style={{height:400,overflowY:"auto",padding:16,display:"flex",flexDirection:"column",gap:12,background:T.n50}}>
@@ -1139,7 +1129,11 @@ export default function App(){
                 <Field label="Pré-requisitos" value={prereqs} onChange={setPrereqs} placeholder="Features ou configurações necessárias antes…" required rows={3}/>
                 <Field label="Escopo Preliminar" value={notes} onChange={setNotes} placeholder="Ideia inicial de funcionamento da feature: como o usuário interage, fluxo básico de uso…" rows={3}/>
                 <FileDropZone files={docFiles} onFiles={setDocFiles}/>
-                <div style={{display:"flex",justifyContent:"flex-end",paddingTop:4,borderTop:"1px solid "+T.n100}}>
+                <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:10,paddingTop:4,borderTop:"1px solid "+T.n100}}>
+                  <select value={globalModelKey} onChange={e=>setGlobalModelKey(e.target.value)}
+                    style={{fontSize:12,padding:"6px 10px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
+                    {CLAUDE_MODELS.map(m=><option key={m.key} value={m.key}>{m.label}</option>)}
+                  </select>
                   <Btn variant="primary" size="lg" onClick={startPipeline}>Iniciar Pipeline →</Btn>
                 </div>
               </div>
