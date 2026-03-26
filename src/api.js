@@ -74,7 +74,7 @@ const api = {
 
   // KB
   async getKB(agentKey) { return request("/kb/" + agentKey); },
-  async getKBContent(agentKey, id) { return request("/kb/" + agentKey + "/" + id + "/content"); },
+  async getKBContent(agentKey, id) { return request("/kb/" + agentKey + "/" + id); },
   async uploadKB(agentKey, file, content, contentType) {
     let fileContent = content;
     let fileContentType = contentType || "text";
