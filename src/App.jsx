@@ -105,6 +105,7 @@ function parseSection(text,marker){
 }
 function cp(t){if(navigator.clipboard) navigator.clipboard.writeText(t).catch(()=>fb(t));else fb(t);}
 function fb(t){const e=document.createElement("textarea");e.value=t;e.style.cssText="position:fixed;top:-9999px";document.body.appendChild(e);e.select();document.execCommand("copy");document.body.removeChild(e);}
+function fmtDate(v){if(!v) return "";const d=new Date(v);if(isNaN(d)) return String(v);const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear(),hh=String(d.getHours()).padStart(2,"0"),mi=String(d.getMinutes()).padStart(2,"0");return dd+"/"+mm+"/"+yy+" "+hh+":"+mi;}
 
 // ── agent config helpers ─────────────────────────────────────────────────────
 let _agentConfigCache = null;
@@ -532,7 +533,7 @@ function HistoryPanel({sessions,onResume,onDelete,onClose}){
                 <div style={{width:32,height:32,borderRadius:T.r8,background:T.p50,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>📋</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:600,fontSize:12,color:T.p500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sess.featureName||"Feature sem nome"}</div>
-                  <div style={{fontSize:10,color:T.n400,marginTop:2,display:"flex",alignItems:"center",gap:3}}><Clock size={9}/>{typeof sess.startedAt==="string"?sess.startedAt:new Date(sess.startedAt).toLocaleString("pt-BR")}</div>
+                  <div style={{fontSize:10,color:T.n400,marginTop:2,display:"flex",alignItems:"center",gap:3}}><Clock size={9}/>{fmtDate(sess.startedAt)}</div>
                   <div style={{fontSize:10,color:T.n300,marginTop:1}}>{(sess.steps&&sess.steps.length)||0} etapa(s)</div>
                 </div>
                 {isOpen?<ChevronUp size={12} color={T.n400}/>:<ChevronDown size={12} color={T.n400}/>}
@@ -547,7 +548,7 @@ function HistoryPanel({sessions,onResume,onDelete,onClose}){
                         <span style={{fontSize:13}}>{lbl.i}</span>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{fontSize:11,fontWeight:600,color:T.n700}}>{lbl.l}</div>
-                          <div style={{fontSize:10,color:T.n400}}>{step.startedAt}</div>
+                          <div style={{fontSize:10,color:T.n400}}>{fmtDate(step.startedAt)}</div>
                         </div>
                         <Btn variant="secondary" size="sm" onClick={()=>{onResume(sess,step.agentKey);onClose();}}>↩️</Btn>
                       </div>
