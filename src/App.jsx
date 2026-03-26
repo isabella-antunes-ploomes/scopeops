@@ -371,7 +371,8 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
       try{
         const instr=await getAgentInstructions(agentKey);
         const kb=await getKbItems(agentKey);
-        const ut=prevContext?"Escopo:\n"+scopeText+"\n\n--- Contexto anterior ---\n"+prevContext:"Escopo:\n"+scopeText;
+        const docNote=fileParts&&fileParts.length>0?"\n\n[IMPORTANTE: O usuário anexou "+fileParts.length+" documento(s) de apoio. Considere todo o conteúdo dos documentos anexados como parte dos insumos fornecidos. Extraia informações relevantes dos documentos para compor o Escopo Preliminar e demais insumos, sem pedir novamente o que já consta nos documentos.]":"";
+        const ut=prevContext?"Escopo:\n"+scopeText+docNote+"\n\n--- Contexto anterior ---\n"+prevContext:"Escopo:\n"+scopeText+docNote;
         const r=await api.callClaude({system:instr,userText:ut,kbItems:kb,fileParts});
         setMessages([{role:"agent",text:r}]);
       }catch(e){setMessages([{role:"agent",text:"Erro: "+e.message}]);}
