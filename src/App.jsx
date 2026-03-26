@@ -126,20 +126,18 @@ async function getAgents(){
     _agentConfigCache = serverCfg;
     const o={};
     for(const k of AGENT_KEYS){
-      // Server is source of truth; AGENT_META only adds icon/color
       const srv = serverCfg[k] || {};
       o[k]={
         ...AGENT_META[k],
         name: srv.name || DEFAULT_AGENTS[k].name,
         description: srv.description || DEFAULT_AGENTS[k].description,
-        instructions: srv.instructions || DEFAULT_AGENTS[k].instructions,
+        instructions: srv.instructions || "",
       };
     }
     return o;
   }catch{
-    // Offline fallback only
     const o={};
-    for(const k of AGENT_KEYS) o[k]={...DEFAULT_AGENTS[k],...AGENT_META[k]};
+    for(const k of AGENT_KEYS) o[k]={name:DEFAULT_AGENTS[k].name,description:DEFAULT_AGENTS[k].description,instructions:"",...AGENT_META[k]};
     return o;
   }
 }
