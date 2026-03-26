@@ -355,12 +355,18 @@ function Panel({icon,title,subtitle,color,children}){
 }
 
 // ── agent chat ────────────────────────────────────────────────────────────────
+const CLAUDE_MODELS=[
+  {id:"claude-sonnet-4-20250514",label:"Sonnet 4"},
+  {id:"claude-opus-4-20250514",label:"Opus 4"},
+];
+
 function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessages,onAdvance,onBack}){
   const meta=AGENT_META[agentKey];
   const [messages,setMessages]=useState(savedMessages||[]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const [initializing,setInitializing]=useState(!savedMessages||savedMessages.length===0);
+  const [model,setModel]=useState(CLAUDE_MODELS[0].id);
   const bottomRef=useRef();
 
   useEffect(()=>{if(bottomRef.current) bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages,loading]);
@@ -374,7 +380,7 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
         const kb=await getKbItems(agentKey);
         const docNote=fileParts&&fileParts.length>0?"\n\n[IMPORTANTE: O usuário anexou "+fileParts.length+" documento(s) de apoio. Considere todo o conteúdo dos documentos anexados como parte dos insumos fornecidos. Extraia informações relevantes dos documentos para compor o Escopo Preliminar e demais insumos, sem pedir novamente o que já consta nos documentos.]":"";
         const ut=prevContext?"Escopo:\n"+scopeText+docNote+"\n\n--- Contexto anterior ---\n"+prevContext:"Escopo:\n"+scopeText+docNote;
-        const r=await api.callClaude({system:instr,userText:ut,kbItems:kb,fileParts});
+        const r=await api.callClaude({system:instr,userText:ut,kbItems:kb,fileParts,model});
         setMessages([{role:"agent",text:r}]);
       }catch(e){setMessages([{role:"agent",text:"Erro: "+e.message}]);}
       setInitializing(false);
@@ -390,7 +396,7 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
       const instr=await getAgentInstructions(agentKey);
       const kb=await getKbItems(agentKey);
       const hist=nm.map(m=>m.role==="user"?"Usuário: "+m.text:"Agente: "+m.text).join("\n\n");
-      const r=await api.callClaude({system:instr,userText:"Escopo:\n"+scopeText+"\n\n--- Contexto anterior ---\n"+prevContext+"\n\n--- Histórico ---\n"+hist+"\n\nContinue respondendo.",kbItems:kb,fileParts});
+      const r=await api.callClaude({system:instr,userText:"Escopo:\n"+scopeText+"\n\n--- Contexto anterior ---\n"+prevContext+"\n\n--- Histórico ---\n"+hist+"\n\nContinue respondendo.",kbItems:kb,fileParts,model});
       setMessages(p=>[...p,{role:"agent",text:r}]);
     }catch(e){setMessages(p=>[...p,{role:"agent",text:"Erro: "+e.message}]);}
     setLoading(false);
@@ -411,7 +417,11 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
             <div style={{fontSize:11,color:T.n400,marginTop:1}}>{cfg.description}</div>
           </div>
         </div>
-        <div style={{display:"flex",gap:8}}>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <select value={model} onChange={e=>setModel(e.target.value)} disabled={initializing||loading}
+            style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
+            {CLAUDE_MODELS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
           <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
           <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar →</Btn>
         </div>

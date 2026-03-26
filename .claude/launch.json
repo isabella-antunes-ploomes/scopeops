@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "scopeops-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/.bin/vite", "--port", "5173"],
       "port": 5173
     }
   ]
