@@ -1,17 +1,17 @@
-const { Router } = require("express");
-const { authMiddleware } = require("../middleware/auth");
+const { verifyAuth } = require("./_lib/auth");
 
-const router = Router();
-router.use(authMiddleware);
+module.exports = async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-router.post("/", async (req, res) => {
+  const auth = verifyAuth(req);
+  if (auth.error) return res.status(auth.error.status).json({ error: auth.error.message });
+
   try {
     const { system, userText, kbItems, fileParts, model, maxTokens } = req.body;
     if (!userText) return res.status(400).json({ error: "userText obrigatório." });
 
     const content = [];
 
-    // PDF docs from KB
     if (kbItems) {
       for (const item of kbItems) {
         if (item && item.type === "pdf") {
@@ -20,14 +20,12 @@ router.post("/", async (req, res) => {
       }
     }
 
-    // PDF file parts
     if (fileParts) {
       for (const p of fileParts) {
         if (p.pdf) content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: p.pdf.data } });
       }
     }
 
-    // Text content
     const textFiles = (fileParts || []).filter(p => p.text).map(p => p.text).join("\n\n");
     const kbTexts = (kbItems || []).filter(i => i && i.type === "text").map((i, x) =>
       "[BASE" + ((kbItems || []).length > 1 ? " " + (x + 1) : "") + "]\n" + i.content + "\n[FIM]"
@@ -61,6 +59,4 @@ router.post("/", async (req, res) => {
     console.error("[claude proxy]", e);
     res.status(500).json({ error: "Erro ao chamar Claude: " + e.message });
   }
-});
-
-module.exports = router;
+};

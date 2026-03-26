@@ -24,9 +24,7 @@ async function request(path, options = {}) {
   const token = getToken();
   const headers = { ...(options.headers || {}) };
   if (token) headers["Authorization"] = "Bearer " + token;
-  if (!(options.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-  }
+  headers["Content-Type"] = "application/json";
   const res = await fetch(API_BASE + path, { ...options, headers });
   if (res.status === 401 && !path.startsWith("/auth/")) {
     clearToken();
@@ -78,10 +76,23 @@ const api = {
   async getKB(agentKey) { return request("/kb/" + agentKey); },
   async getKBContent(agentKey, id) { return request("/kb/" + agentKey + "/" + id + "/content"); },
   async uploadKB(agentKey, file, content, contentType) {
-    const form = new FormData();
-    form.append("file", file);
-    if (content) { form.append("content", content); form.append("contentType", contentType || "text"); }
-    return request("/kb/" + agentKey, { method: "POST", body: form });
+    let fileContent = content;
+    let fileContentType = contentType || "text";
+    if (!fileContent) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (ext === "pdf") {
+        fileContentType = "pdf";
+        const buf = await file.arrayBuffer();
+        fileContent = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      } else {
+        fileContentType = "text";
+        fileContent = await file.text();
+      }
+    }
+    return request("/kb/" + agentKey, {
+      method: "POST",
+      body: JSON.stringify({ fileName: file.name, content: fileContent, contentType: fileContentType })
+    });
   },
   async deleteKB(agentKey, id) { return request("/kb/" + agentKey + "/" + id, { method: "DELETE" }); },
 
