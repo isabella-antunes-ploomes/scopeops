@@ -566,12 +566,18 @@ function HistoryPanel({sessions,onResume,onDelete,onClose}){
 
 // ── users modal ───────────────────────────────────────────────────────────────
 function UsersModal({onClose,currentUser}){
-  const [users,setUsers]=useState([]);const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(null);
+  const [users,setUsers]=useState([]);const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(null);const [deleting,setDeleting]=useState(null);
   useEffect(()=>{api.getUsers().then(u=>{setUsers(u);setLoading(false);}).catch(()=>setLoading(false));},[]);
   async function toggleRole(email,currentRole){
     const newRole=currentRole==="admin"?"common":"admin";
     setSaving(email);await api.setUserRole(email,newRole);
     setUsers(prev=>prev.map(u=>u.email===email?{...u,role:newRole}:u));setSaving(null);
+  }
+  async function removeUser(email){
+    if(!confirm("Tem certeza que deseja remover "+email+"?\nO usuário perderá acesso e precisará criar conta novamente.")) return;
+    setDeleting(email);
+    try{await api.deleteUser(email);setUsers(prev=>prev.filter(u=>u.email!==email));}catch(e){alert("Erro: "+e.message);}
+    setDeleting(null);
   }
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(14,16,34,.45)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,fontFamily:T.font}}>
@@ -609,10 +615,16 @@ function UsersModal({onClose,currentUser}){
                   </td>
                   <td style={{padding:"12px 20px",textAlign:"center"}}>
                     {u.email===currentUser?<span style={{fontSize:11,color:T.n300}}>—</span>
-                    :<button onClick={()=>toggleRole(u.email,u.role)} disabled={saving===u.email}
+                    :<div style={{display:"flex",gap:6,justifyContent:"center"}}>
+                      <button onClick={()=>toggleRole(u.email,u.role)} disabled={saving===u.email}
                         style={{fontSize:11,fontWeight:600,padding:"5px 12px",borderRadius:T.r6,border:"1px solid "+(u.role==="admin"?T.eB:T.p200),background:u.role==="admin"?T.eBg:T.p50,color:u.role==="admin"?T.eT:T.p500,cursor:saving===u.email?"not-allowed":"pointer",opacity:saving===u.email?.6:1}}>
                         {saving===u.email?"…":u.role==="admin"?"Tornar Comum":"Tornar Admin"}
-                      </button>}
+                      </button>
+                      <button onClick={()=>removeUser(u.email)} disabled={deleting===u.email}
+                        style={{fontSize:11,fontWeight:600,padding:"5px 10px",borderRadius:T.r6,border:"1px solid #FCA5A5",background:"#FEF2F2",color:"#DC2626",cursor:deleting===u.email?"not-allowed":"pointer",opacity:deleting===u.email?.6:1}}>
+                        {deleting===u.email?"…":"🗑️ Remover"}
+                      </button>
+                    </div>}
                   </td>
                 </tr>
               ))}</tbody>

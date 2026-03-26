@@ -99,6 +99,7 @@ const api = {
   // Users
   async getUsers() { return request("/users"); },
   async setUserRole(email, role) { return request("/users/" + encodeURIComponent(email) + "/role", { method: "PUT", body: JSON.stringify({ role }) }); },
+  async deleteUser(email) { return request("/users/" + encodeURIComponent(email), { method: "DELETE" }); },
 
   // Claude proxy
   async callClaude({ system, userText, kbItems, fileParts }) {
