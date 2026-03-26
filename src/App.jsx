@@ -451,6 +451,10 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
           <Send size={14} color={!input.trim()||loading||initializing?T.n400:"#fff"}/>
         </button>
       </div>
+      <div style={{padding:"10px 16px",borderTop:"1px solid "+T.n100,background:T.n50,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
+        <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar para próxima etapa →</Btn>
+      </div>
       <style>{"@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}"}</style>
     </div>
   );
