@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
-function verifyAuth(req) {
+export function verifyAuth(req) {
   const header = req.headers.authorization;
   if (!header || !header.startsWith("Bearer ")) {
     return { error: { status: 401, message: "Token não fornecido." } };
@@ -13,11 +13,9 @@ function verifyAuth(req) {
   }
 }
 
-function requireAdmin(user) {
+export function requireAdmin(user) {
   if (user.role !== "admin") {
     return { error: { status: 403, message: "Acesso restrito a administradores." } };
   }
   return null;
 }
-
-module.exports = { verifyAuth, requireAdmin };

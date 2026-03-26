@@ -1,8 +1,8 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { supabase } = require("../_lib/supabase");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { supabase } from "../_lib/supabase.js";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
@@ -22,4 +22,4 @@ module.exports = async function handler(req, res) {
     console.error(e);
     res.status(500).json({ error: "Erro interno." });
   }
-};
+}

@@ -1,13 +1,13 @@
-const { supabase } = require("../../../_lib/supabase");
-const { verifyAuth } = require("../../../_lib/auth");
+import { supabase } from "../../../_lib/supabase.js";
+import { verifyAuth } from "../../../_lib/auth.js";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   const auth = verifyAuth(req);
   if (auth.error) return res.status(auth.error.status).json({ error: auth.error.message });
 
-  const id = Number(req.query.id);
+  const id = req.query.id;
   const agentKey = req.query.agentKey;
 
   try {
@@ -35,4 +35,4 @@ module.exports = async function handler(req, res) {
     console.error(e);
     res.status(500).json({ error: "Erro." });
   }
-};
+}

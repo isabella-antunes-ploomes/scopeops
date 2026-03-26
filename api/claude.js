@@ -1,6 +1,6 @@
-const { verifyAuth } = require("./_lib/auth");
+import { verifyAuth } from "./_lib/auth.js";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const auth = verifyAuth(req);
@@ -59,4 +59,4 @@ module.exports = async function handler(req, res) {
     console.error("[claude proxy]", e);
     res.status(500).json({ error: "Erro ao chamar Claude: " + e.message });
   }
-};
+}

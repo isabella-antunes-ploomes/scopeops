@@ -1,7 +1,7 @@
-const { supabase } = require("../../_lib/supabase");
-const { verifyAuth, requireAdmin } = require("../../_lib/auth");
+import { supabase } from "../../_lib/supabase.js";
+import { verifyAuth, requireAdmin } from "../../_lib/auth.js";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "PUT") return res.status(405).json({ error: "Method not allowed" });
 
   const auth = verifyAuth(req);
@@ -26,4 +26,4 @@ module.exports = async function handler(req, res) {
     console.error(e);
     res.status(500).json({ error: "Erro ao atualizar role." });
   }
-};
+}

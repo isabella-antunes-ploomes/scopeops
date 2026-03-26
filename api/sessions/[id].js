@@ -1,11 +1,11 @@
-const { supabase } = require("../_lib/supabase");
-const { verifyAuth } = require("../_lib/auth");
+import { supabase } from "../_lib/supabase.js";
+import { verifyAuth } from "../_lib/auth.js";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   const auth = verifyAuth(req);
   if (auth.error) return res.status(auth.error.status).json({ error: auth.error.message });
   const user = auth.user;
-  const id = Number(req.query.id);
+  const id = req.query.id;
 
   try {
     if (req.method === "PUT") {
@@ -34,4 +34,4 @@ module.exports = async function handler(req, res) {
     console.error(e);
     res.status(500).json({ error: "Erro ao processar sessão." });
   }
-};
+}
