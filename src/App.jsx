@@ -356,8 +356,10 @@ function Panel({icon,title,subtitle,color,children}){
 
 // ── agent chat ────────────────────────────────────────────────────────────────
 const CLAUDE_MODELS=[
-  {id:"claude-sonnet-4-20250514",label:"Sonnet 4"},
-  {id:"claude-opus-4-20250514",label:"Opus 4"},
+  {key:"opus",id:"claude-opus-4-20250514",label:"Opus 4.6"},
+  {key:"opus1m",id:"claude-opus-4-20250514",label:"Opus 4.6 (1M)",maxTokens:16000},
+  {key:"sonnet",id:"claude-sonnet-4-20250514",label:"Sonnet 4.6"},
+  {key:"haiku",id:"claude-haiku-4-20250514",label:"Haiku 4.5"},
 ];
 
 function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessages,onAdvance,onBack}){
@@ -366,7 +368,8 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const [initializing,setInitializing]=useState(!savedMessages||savedMessages.length===0);
-  const [model,setModel]=useState(CLAUDE_MODELS[0].id);
+  const [modelKey,setModelKey]=useState("sonnet");
+  const selModel=CLAUDE_MODELS.find(m=>m.key===modelKey)||CLAUDE_MODELS[2];
   const bottomRef=useRef();
 
   useEffect(()=>{if(bottomRef.current) bottomRef.current.scrollIntoView({behavior:"smooth"});},[messages,loading]);
@@ -380,8 +383,8 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
         const kb=await getKbItems(agentKey);
         const docNote=fileParts&&fileParts.length>0?"\n\n[IMPORTANTE: O usuário anexou "+fileParts.length+" documento(s) de apoio. Considere todo o conteúdo dos documentos anexados como parte dos insumos fornecidos. Extraia informações relevantes dos documentos para compor o Escopo Preliminar e demais insumos, sem pedir novamente o que já consta nos documentos.]":"";
         const ut=prevContext?"Escopo:\n"+scopeText+docNote+"\n\n--- Contexto anterior ---\n"+prevContext:"Escopo:\n"+scopeText+docNote;
-        const r=await api.callClaude({system:instr,userText:ut,kbItems:kb,fileParts,model});
-        setMessages([{role:"agent",text:r}]);
+        const r=await api.callClaude({system:instr,userText:ut,kbItems:kb,fileParts,model:selModel.id,maxTokens:selModel.maxTokens});
+        setMessages([{role:"agent",text:r,modelLabel:selModel.label}]);
       }catch(e){setMessages([{role:"agent",text:"Erro: "+e.message}]);}
       setInitializing(false);
     })();
@@ -396,8 +399,8 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
       const instr=await getAgentInstructions(agentKey);
       const kb=await getKbItems(agentKey);
       const hist=nm.map(m=>m.role==="user"?"Usuário: "+m.text:"Agente: "+m.text).join("\n\n");
-      const r=await api.callClaude({system:instr,userText:"Escopo:\n"+scopeText+"\n\n--- Contexto anterior ---\n"+prevContext+"\n\n--- Histórico ---\n"+hist+"\n\nContinue respondendo.",kbItems:kb,fileParts,model});
-      setMessages(p=>[...p,{role:"agent",text:r}]);
+      const r=await api.callClaude({system:instr,userText:"Escopo:\n"+scopeText+"\n\n--- Contexto anterior ---\n"+prevContext+"\n\n--- Histórico ---\n"+hist+"\n\nContinue respondendo.",kbItems:kb,fileParts,model:selModel.id,maxTokens:selModel.maxTokens});
+      setMessages(p=>[...p,{role:"agent",text:r,modelLabel:selModel.label}]);
     }catch(e){setMessages(p=>[...p,{role:"agent",text:"Erro: "+e.message}]);}
     setLoading(false);
   }
@@ -418,9 +421,9 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
           </div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <select value={model} onChange={e=>setModel(e.target.value)} disabled={initializing||loading}
+          <select value={modelKey} onChange={e=>setModelKey(e.target.value)} disabled={initializing||loading}
             style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
-            {CLAUDE_MODELS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
+            {CLAUDE_MODELS.map(m=><option key={m.key} value={m.key}>{m.label}</option>)}
           </select>
           <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
           <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar →</Btn>
@@ -435,7 +438,7 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
               <div style={{background:msg.role==="user"?meta.color:T.n0,color:msg.role==="user"?"#fff":T.n800,borderRadius:msg.role==="user"?"12px 12px 4px 12px":"12px 12px 12px 4px",padding:"10px 14px",fontSize:13,lineHeight:1.6,boxShadow:T.shadowSm,border:msg.role==="agent"?"1px solid "+T.n100:"none",whiteSpace:"pre-wrap",fontFamily:T.font}}>
                 {msg.text}
               </div>
-              {msg.role==="agent"&&<div style={{marginTop:4,display:"flex",justifyContent:"flex-end"}}><CopyBtn text={msg.text}/></div>}
+              {msg.role==="agent"&&<div style={{marginTop:4,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:6}}>{msg.modelLabel&&<span style={{fontSize:9,color:T.n400,background:T.n100,padding:"1px 6px",borderRadius:10,fontWeight:500}}>{msg.modelLabel}</span>}<CopyBtn text={msg.text}/></div>}
             </div>
           </div>
         ))}
@@ -464,9 +467,9 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
       <div style={{padding:"10px 16px",borderTop:"1px solid "+T.n100,background:T.n50,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <select value={model} onChange={e=>setModel(e.target.value)} disabled={initializing||loading}
+          <select value={modelKey} onChange={e=>setModelKey(e.target.value)} disabled={initializing||loading}
             style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
-            {CLAUDE_MODELS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
+            {CLAUDE_MODELS.map(m=><option key={m.key} value={m.key}>{m.label}</option>)}
           </select>
           <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar para próxima etapa →</Btn>
         </div>

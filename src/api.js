@@ -102,8 +102,8 @@ const api = {
   async deleteUser(email) { return request("/users/" + encodeURIComponent(email) + "/role", { method: "DELETE" }); },
 
   // Claude proxy
-  async callClaude({ system, userText, kbItems, fileParts, model }) {
-    const data = await request("/claude", { method: "POST", body: JSON.stringify({ system, userText, kbItems, fileParts, model }) });
+  async callClaude({ system, userText, kbItems, fileParts, model, maxTokens }) {
+    const data = await request("/claude", { method: "POST", body: JSON.stringify({ system, userText, kbItems, fileParts, model, maxTokens }) });
     return data.text;
   },
 };
