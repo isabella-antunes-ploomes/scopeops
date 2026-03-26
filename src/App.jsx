@@ -463,7 +463,13 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
       </div>
       <div style={{padding:"10px 16px",borderTop:"1px solid "+T.n100,background:T.n50,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
-        <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar para próxima etapa →</Btn>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <select value={model} onChange={e=>setModel(e.target.value)} disabled={initializing||loading}
+            style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
+            {CLAUDE_MODELS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+          <Btn variant="primary" size="sm" onClick={advance} disabled={initializing||loading||messages.length===0}>Avançar para próxima etapa →</Btn>
+        </div>
       </div>
       <style>{"@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}"}</style>
     </div>
