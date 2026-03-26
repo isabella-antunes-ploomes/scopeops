@@ -362,13 +362,12 @@ const CLAUDE_MODELS=[
   {key:"haiku",id:"claude-haiku-4-20250514",label:"Haiku 4.5"},
 ];
 
-function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessages,onAdvance,onBack}){
+function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessages,onAdvance,onBack,modelKey,onModelChange}){
   const meta=AGENT_META[agentKey];
   const [messages,setMessages]=useState(savedMessages||[]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const [initializing,setInitializing]=useState(!savedMessages||savedMessages.length===0);
-  const [modelKey,setModelKey]=useState("sonnet");
   const selModel=CLAUDE_MODELS.find(m=>m.key===modelKey)||CLAUDE_MODELS[2];
   const bottomRef=useRef();
 
@@ -421,7 +420,7 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
           </div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <select value={modelKey} onChange={e=>setModelKey(e.target.value)} disabled={initializing||loading}
+          <select value={modelKey} onChange={e=>onModelChange(e.target.value)} disabled={initializing||loading}
             style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
             {CLAUDE_MODELS.map(m=><option key={m.key} value={m.key}>{m.label}</option>)}
           </select>
@@ -467,7 +466,7 @@ function AgentChatPhase({agentKey,cfg,scopeText,fileParts,prevContext,savedMessa
       <div style={{padding:"10px 16px",borderTop:"1px solid "+T.n100,background:T.n50,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <Btn variant="ghost" size="sm" onClick={onBack}>← Voltar</Btn>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <select value={modelKey} onChange={e=>setModelKey(e.target.value)} disabled={initializing||loading}
+          <select value={modelKey} onChange={e=>onModelChange(e.target.value)} disabled={initializing||loading}
             style={{fontSize:11,padding:"4px 8px",borderRadius:T.r6,border:"1px solid "+T.n200,background:T.n0,color:T.n700,cursor:"pointer",fontFamily:T.font,outline:"none"}}>
             {CLAUDE_MODELS.map(m=><option key={m.key} value={m.key}>{m.label}</option>)}
           </select>
@@ -958,6 +957,7 @@ export default function App(){
   const [userRole,setUserRole_]=useState(storedUser ? storedUser.role : "common");
   const [ready,setReady]=useState(!!storedUser);
   const [phase,setPhase]=useState("input");
+  const [globalModelKey,setGlobalModelKey]=useState("sonnet");
   const [toast,setToast]=useState(null);const [toastType,setToastType]=useState("error");
   const [showHist,setShowHist]=useState(false);
   const [showPrompts,setShowPrompts]=useState(false);
@@ -1148,6 +1148,7 @@ export default function App(){
 
           {PIPELINE.filter(k=>k!=="final").map(k=>phase===k&&(
             <AgentChatPhase key={k} agentKey={k} cfg={agentCfg[k]} scopeText={scopeText()} fileParts={fileParts} prevContext={prevContext} savedMessages={agentMessages[k]||null}
+              modelKey={globalModelKey} onModelChange={setGlobalModelKey}
               onAdvance={(sum,msgs)=>handleAgentAdvance(k,sum,msgs)}
               onBack={()=>{const idx=PIPELINE.indexOf(k);setPhase(idx===0?"input":PIPELINE[idx-1]);}}/>
           ))}
