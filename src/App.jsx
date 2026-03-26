@@ -937,7 +937,7 @@ export default function App(){
   const [featureName,setFeatureName]=useState("");const [statement,setStatement]=useState("");const [notes,setNotes]=useState("");const [prereqs,setPrereqs]=useState("");
   const [docFiles,setDocFiles]=useState([]);const [fileParts,setFileParts]=useState([]);
   const [currentSessionId,setCurrentSessionId]=useState(null);const [agentMessages,setAgentMessages]=useState({});const [contextChain,setContextChain]=useState([]);
-  const scopeText=()=>"## Nome da Feature\n"+featureName+"\n\n## Problem Statement\n"+statement+"\n\n## Pré-requisitos\n"+(prereqs||"Nenhum")+"\n\n## Anotações\n"+notes;
+  const scopeText=()=>"## Nome da Feature\n"+featureName+"\n\n## Problem Statement\n"+statement+"\n\n## Pré-requisitos\n"+(prereqs||"Nenhum")+"\n\n## Escopo Preliminar\n"+notes;
   const prevContext=contextChain.join("\n\n");
   function showT(msg,type){setToast(msg);setToastType(type||"error");}
 
@@ -1104,7 +1104,7 @@ export default function App(){
                 <Field label="Nome da Feature" value={featureName} onChange={setFeatureName} placeholder="Ex: Importação de Contatos via CSV" required/>
                 <Field label="Problem Statement" value={statement} onChange={setStatement} placeholder="Qual problema estamos resolvendo? Para quem? Qual o impacto esperado?" required rows={4}/>
                 <Field label="Pré-requisitos" value={prereqs} onChange={setPrereqs} placeholder="Features ou configurações necessárias antes…" required rows={3}/>
-                <Field label="Anotações de Discovery" value={notes} onChange={setNotes} placeholder="Insights, benchmarks, restrições…" rows={3}/>
+                <Field label="Escopo Preliminar" value={notes} onChange={setNotes} placeholder="Ideia inicial de funcionamento da feature: como o usuário interage, fluxo básico de uso…" rows={3}/>
                 <FileDropZone files={docFiles} onFiles={setDocFiles}/>
                 <div style={{display:"flex",justifyContent:"flex-end",paddingTop:4,borderTop:"1px solid "+T.n100}}>
                   <Btn variant="primary" size="lg" onClick={startPipeline}>Iniciar Pipeline →</Btn>
