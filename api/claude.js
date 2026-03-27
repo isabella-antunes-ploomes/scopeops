@@ -40,21 +40,36 @@ export default async function handler(req, res) {
       messages: [{ role: "user", content }]
     };
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
-      },
-      body: JSON.stringify(body)
-    });
+    const MAX_RETRIES = 3;
+    const RETRY_DELAYS = [1000, 3000, 6000];
 
-    const data = await response.json();
-    if (data.error) return res.status(response.status).json({ error: data.error.message });
+    let lastError = null;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify(body)
+      });
 
-    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
-    res.json({ text });
+      if (response.status === 529 || response.status === 429) {
+        lastError = `API sobrecarregada (${response.status})`;
+        console.warn(`[claude proxy] Tentativa ${attempt + 1}/${MAX_RETRIES} - ${lastError}, retrying in ${RETRY_DELAYS[attempt]}ms...`);
+        await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+        continue;
+      }
+
+      const data = await response.json();
+      if (data.error) return res.status(response.status).json({ error: data.error.message });
+
+      const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      return res.json({ text });
+    }
+
+    return res.status(529).json({ error: `API sobrecarregada após ${MAX_RETRIES} tentativas. Tente novamente em alguns segundos.` });
   } catch (e) {
     console.error("[claude proxy]", e);
     res.status(500).json({ error: "Erro ao chamar Claude: " + e.message });
